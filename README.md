@@ -1,11 +1,16 @@
 # Training Minor
 
-## Back to Being — slidedeck
+## Van idee naar iets dat bestaat — slidedeck
 
-`back-to-being/index.html` is een zelfstandig HTML-slidedeck voor de sessie
-**"Van idee naar iets dat bestaat"**, met Back to Being als praktijkvoorbeeld.
+**Live:** https://cschoorl.github.io/Training-minor/
 
-Open het bestand in een browser. Geen build, geen dependencies.
+HTML-slidedeck voor de sessie over het omzetten van een idee in actie,
+zichtbaarheid en tractie, met Back to Being als praktijkvoorbeeld.
+Zestien slides in drie etappes: **mensen** (Caesar), **verhaal** (Max) en
+**lancering** (Stijn).
+
+Zelfstandig bestand, geen build, geen dependencies. Gehost via GitHub Pages
+vanaf deze branch.
 
 | Toets | Actie |
 |---|---|
@@ -17,7 +22,8 @@ Open het bestand in een browser. Geen build, geen dependencies.
 De stippen in de linkerkantlijn zijn klikbaar om direct naar een slide te
 springen. Printen naar PDF geeft één slide per pagina.
 
-### Opbouw
+### Bestanden
 
-16 slides in drie etappes: **mensen** (Caesar), **verhaal** (Max) en
-**lancering** (Stijn).
+- `index.html` — het deck
+- `preview.png` — afbeelding voor het linkvoorbeeld bij delen
+- `back-to-being/` — doorverwijzing van de oude URL naar de hoofdpagina
