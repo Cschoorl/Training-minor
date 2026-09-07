@@ -1,71 +1,79 @@
 <title>Van Idee Naar Tractie</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,400;12..96,75..100,600;12..96,75..100,800&family=JetBrains+Mono:wght@400;600&family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;0,6..72,500;1,6..72,400&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Newsreader:ital,opsz,wght@1,6..72,300&family=Outfit:wght@200;300;400;500;600&display=swap">
 
 <style>
-/* ── Tokens ─ dark-first: the deck is made to be projected ───────────── */
+/* ── Tokens ───────────────────────────────────────────────────────────────
+   Kleuren afgeleid van het Back to Being-logo: het salie/olijfgroen van het
+   beeldmerk en het woordmerk is de dragende kleur. Het gedempte oker komt
+   alleen terug in de Camino-elementen (de pijl en de kilometersteen).
+   Licht-eerst, want het merk leeft op een lichte, rustige ondergrond.       */
 :root{
-  --ink:#101512;
-  --surface:#182019;
-  --surface-2:#1E2721;
-  --line:#2B372E;
-  --line-soft:#222C25;
-  --text:#EAE8DD;
-  --text-dim:#94A296;
-  --arrow:#F2B705;         /* flecha amarilla — de gele Camino-pijl */
-  --arrow-ink:#161000;
-  --accent-text:#F2B705;
-  --euca:#82A886;
-  --atlantic:#68A0B4;
-  --shadow:0 18px 50px -28px rgba(0,0,0,.85);
+  --ink:#F7F6F1;
+  --surface:#FFFFFF;
+  --surface-2:#F1F1E9;
+  --line:#DBDBCE;
+  --line-soft:#E7E7DC;
+  --text:#252B21;
+  --text-dim:#69725F;
+  --brand:#96A382;          /* het groen uit het logo */
+  --brand-strong:#6E7C58;   /* zelfde kleur, donker genoeg voor tekst */
+  --accent-text:#6E7C58;
+  --arrow:#C99A2E;          /* flecha amarilla, gedempt naar het merk */
+  --arrow-ink:#231900;
+  --shadow:0 18px 50px -30px rgba(45,50,38,.4);
 
   --stage-w:1280px;
   --stage-h:720px;
+
+  --sans:"Outfit","Avenir Next","Segoe UI",Helvetica,Arial,sans-serif;
+  --serif:"Newsreader",Georgia,"Times New Roman",serif;
+  --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
 }
-@media (prefers-color-scheme: light){
-  :root:not([data-theme="dark"]){
-    --ink:#E6E3D7;
-    --surface:#F0EEE4;
-    --surface-2:#F6F4EC;
-    --line:#C9C5B4;
-    --line-soft:#D8D4C5;
-    --text:#161C18;
-    --text-dim:#586254;
-    --arrow:#E0A200;
-    --arrow-ink:#1C1400;
-    --accent-text:#7C5400;
-    --euca:#3F6444;
-    --atlantic:#2F6072;
-    --shadow:0 18px 50px -30px rgba(40,44,36,.45);
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --ink:#171B15;
+    --surface:#1E231A;
+    --surface-2:#242A1F;
+    --line:#343B2D;
+    --line-soft:#2A3124;
+    --text:#ECEEE4;
+    --text-dim:#97A18B;
+    --brand:#A9B693;
+    --brand-strong:#A9B693;
+    --accent-text:#A9B693;
+    --arrow:#D9AC45;
+    --arrow-ink:#1A1200;
+    --shadow:0 18px 50px -28px rgba(0,0,0,.8);
   }
 }
-:root[data-theme="light"]{
-  --ink:#E6E3D7;
-  --surface:#F0EEE4;
-  --surface-2:#F6F4EC;
-  --line:#C9C5B4;
-  --line-soft:#D8D4C5;
-  --text:#161C18;
-  --text-dim:#586254;
-  --arrow:#E0A200;
-  --arrow-ink:#1C1400;
-  --accent-text:#7C5400;
-  --euca:#3F6444;
-  --atlantic:#2F6072;
-  --shadow:0 18px 50px -30px rgba(40,44,36,.45);
+:root[data-theme="dark"]{
+  --ink:#171B15;
+  --surface:#1E231A;
+  --surface-2:#242A1F;
+  --line:#343B2D;
+  --line-soft:#2A3124;
+  --text:#ECEEE4;
+  --text-dim:#97A18B;
+  --brand:#A9B693;
+  --brand-strong:#A9B693;
+  --accent-text:#A9B693;
+  --arrow:#D9AC45;
+  --arrow-ink:#1A1200;
+  --shadow:0 18px 50px -28px rgba(0,0,0,.8);
 }
 
 *{box-sizing:border-box}
 body{
   background:var(--ink);
   color:var(--text);
-  font-family:"Newsreader",Georgia,"Times New Roman",serif;
+  font-family:var(--sans);
   overflow:hidden;
   height:100vh;
 }
 
-/* ── Stage: fixed 16:9, scaled to fit ────────────────────────────────── */
+/* ── Stage: vaste 16:9, geschaald naar het venster ────────────────────── */
 #stage{
   position:absolute; top:50%; left:50%;
   width:var(--stage-w); height:var(--stage-h);
@@ -83,7 +91,7 @@ body{
 }
 .slide.is-active{visibility:visible; opacity:1}
 
-/* ── The trail: waymarker rail down the left edge ─────────────────────── */
+/* ── De route: wegwijzers langs de linkerkantlijn ─────────────────────── */
 #rail{
   position:absolute; left:64px; top:96px; bottom:64px;
   width:2px; background:var(--line-soft);
@@ -95,7 +103,7 @@ body{
   transition:background .2s ease, transform .2s ease;
 }
 #rail .dot:hover{background:var(--text-dim); transform:scale(1.25)}
-#rail .dot.done{background:var(--euca)}
+#rail .dot.done{background:var(--brand)}
 #rail .dot.now{background:var(--arrow); transform:scale(1.5)}
 #rail .dot:focus-visible{outline:2px solid var(--arrow); outline-offset:3px}
 
@@ -106,39 +114,59 @@ body{
 }
 #marker .glyph{width:34px; height:34px; color:var(--arrow); transform:rotate(-4deg)}
 #marker .km{
-  font-family:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  font-family:var(--mono);
   font-size:11px; letter-spacing:.06em; color:var(--text-dim);
   font-variant-numeric:tabular-nums;
 }
 
-/* ── Type ─────────────────────────────────────────────────────────────── */
+/* ── Typografie ───────────────────────────────────────────────────────── */
 .eyebrow{
-  font-family:"JetBrains Mono",ui-monospace,monospace;
-  font-size:12px; font-weight:600; letter-spacing:.2em; text-transform:uppercase;
+  font-family:var(--sans);
+  font-size:12px; font-weight:500; letter-spacing:.22em; text-transform:uppercase;
   color:var(--accent-text);
 }
-.eyebrow .sep{color:var(--text-dim); margin:0 .55em; font-weight:400}
+.eyebrow .sep{color:var(--text-dim); margin:0 .55em; font-weight:300}
 h1,h2,h3{
-  font-family:"Bricolage Grotesque","Helvetica Neue",Arial,sans-serif;
-  font-weight:800; margin:0; text-wrap:balance; letter-spacing:-.02em;
+  font-family:var(--sans);
+  font-weight:500; margin:0; text-wrap:balance; letter-spacing:-.022em;
   line-height:1.02;
 }
-h1{font-size:80px; font-variation-settings:"wdth" 92}
-h2{font-size:48px; line-height:1.04}
-h3{font-size:22px; font-weight:600; letter-spacing:-.01em; line-height:1.15}
+h1{font-size:78px; font-weight:400}
+h2{font-size:48px; line-height:1.06}
+h3{font-size:22px; font-weight:500; letter-spacing:-.012em; line-height:1.18}
 p{margin:0}
-.lead{font-size:25px; line-height:1.45; color:var(--text); max-width:26em; font-weight:300}
-.body{font-size:20px; line-height:1.5; color:var(--text-dim); max-width:34em}
+.lead{font-size:24px; line-height:1.48; color:var(--text); max-width:27em; font-weight:300}
+.body{font-size:19px; line-height:1.52; color:var(--text-dim); max-width:35em; font-weight:300}
 .kicker{
-  font-family:"Bricolage Grotesque",Arial,sans-serif;
-  font-size:21px; font-weight:600; line-height:1.3; color:var(--text);
-  border-left:3px solid var(--arrow); padding-left:18px; max-width:30em;
+  font-size:21px; font-weight:400; line-height:1.34; color:var(--text);
+  border-left:3px solid var(--brand); padding-left:18px; max-width:31em;
 }
-.mono{font-family:"JetBrains Mono",ui-monospace,monospace}
+.mono{font-family:var(--mono)}
 em{font-style:italic; color:var(--text)}
-strong{font-weight:600; color:var(--text)}
+strong{font-weight:500; color:var(--text)}
 
 .spacer{flex:1}
+
+/* ── Openingsslide ────────────────────────────────────────────────────── */
+.slide-open{gap:38px}
+.logo{display:flex; flex-direction:column; gap:16px; align-items:flex-start; color:var(--brand)}
+.logo .mark{height:78px; width:auto; display:block; fill:currentColor}
+.logo .word{
+  font-family:var(--sans); font-size:42px; font-weight:300;
+  letter-spacing:-.005em; line-height:1; color:currentColor;
+}
+h1.opener{
+  font-size:56px; font-weight:300; line-height:1.16; letter-spacing:-.022em;
+  max-width:18em; color:var(--text);
+}
+.openfoot{
+  display:flex; align-items:baseline; flex-wrap:wrap;
+  border-top:1px solid var(--line); padding-top:18px;
+  font-size:16px; font-weight:300; color:var(--text-dim);
+}
+.openfoot span{padding-right:22px; margin-right:22px; border-right:1px solid var(--line-soft)}
+.openfoot span:last-child{border-right:0; padding-right:0; margin-right:0}
+.openfoot .site{color:var(--accent-text); font-size:14px; letter-spacing:.06em}
 
 /* ── Grids ────────────────────────────────────────────────────────────── */
 .cols{display:grid; gap:22px}
@@ -154,21 +182,21 @@ strong{font-weight:600; color:var(--text)}
   display:flex; flex-direction:column; gap:8px;
 }
 .panel .label{
-  font-family:"JetBrains Mono",monospace; font-size:11px; letter-spacing:.16em;
+  font-family:var(--mono); font-size:11px; letter-spacing:.16em;
   text-transform:uppercase; color:var(--text-dim);
 }
 .panel p{font-size:16.5px; line-height:1.42; color:var(--text-dim)}
 
 /* stat tiles — hier zijn de cijfers wél het punt */
-.stat{display:flex; flex-direction:column; gap:4px; padding-top:16px; border-top:2px solid var(--arrow)}
+.stat{display:flex; flex-direction:column; gap:4px; padding-top:16px; border-top:2px solid var(--brand)}
 .stat .fig{
-  font-family:"Bricolage Grotesque",Arial,sans-serif;
-  font-size:62px; font-weight:800; line-height:.92; letter-spacing:-.035em;
+  font-family:var(--sans);
+  font-size:60px; font-weight:300; line-height:.92; letter-spacing:-.035em;
   font-variant-numeric:tabular-nums;
 }
 .stat .unit{
-  font-family:"Bricolage Grotesque",Arial,sans-serif;
-  font-size:19px; font-weight:600; color:var(--text);
+  font-family:var(--sans);
+  font-size:19px; font-weight:500; color:var(--text);
 }
 .stat .note{font-size:15px; line-height:1.35; color:var(--text-dim)}
 
@@ -182,13 +210,13 @@ ol.steps li:last-child{border-bottom:0; padding-bottom:0}
 ol.steps li::before{
   counter-increment:s; content:counter(s,decimal-leading-zero);
   grid-column:1; grid-row:1;
-  font-family:"JetBrains Mono",monospace; font-size:13px; font-weight:600;
-  color:var(--arrow); letter-spacing:.04em; line-height:1.75;
+  font-family:var(--mono); font-size:13px; font-weight:600;
+  color:var(--brand-strong); letter-spacing:.04em; line-height:1.9;
 }
 ol.steps b{
   grid-column:2; grid-row:1;
-  font-family:"Bricolage Grotesque",Arial,sans-serif;
-  font-size:19px; font-weight:600; line-height:1.2; color:var(--text);
+  font-family:var(--sans);
+  font-size:19px; font-weight:500; line-height:1.24; color:var(--text);
 }
 ol.steps span{
   grid-column:2; grid-row:2;
@@ -198,18 +226,18 @@ ol.steps span{
 /* quote */
 blockquote{
   margin:0; font-size:34px; line-height:1.22; font-weight:300; max-width:20em;
-  font-family:"Newsreader",Georgia,serif; font-style:italic; color:var(--text);
+  font-family:var(--serif); font-style:italic; color:var(--text);
 }
 blockquote .attr{
   display:block; margin-top:16px; font-style:normal;
-  font-family:"JetBrains Mono",monospace; font-size:12px; letter-spacing:.14em;
+  font-family:var(--mono); font-size:12px; letter-spacing:.14em;
   text-transform:uppercase; color:var(--text-dim);
 }
 
 /* speaker header */
 .speaker{display:flex; align-items:baseline; gap:18px}
 .speaker .who{
-  font-family:"Bricolage Grotesque",Arial,sans-serif; font-size:15px; font-weight:600;
+  font-family:var(--sans); font-size:15px; font-weight:600;
   letter-spacing:.02em; color:var(--arrow-ink); background:var(--arrow);
   padding:5px 12px 6px; border-radius:2px;
 }
@@ -218,7 +246,7 @@ blockquote .attr{
 /* pers-logo's als tekstregel */
 .press{display:flex; flex-wrap:wrap; gap:10px}
 .press span{
-  font-family:"JetBrains Mono",monospace; font-size:13px; letter-spacing:.06em;
+  font-family:var(--mono); font-size:13px; letter-spacing:.06em;
   border:1px solid var(--line); border-radius:2px; padding:7px 12px; color:var(--text-dim);
 }
 
@@ -229,7 +257,7 @@ blockquote .attr{
 .titlemeta div{padding-right:28px; margin-right:28px; border-right:1px solid var(--line-soft)}
 .titlemeta div:last-child{border-right:0}
 .titlemeta .n{
-  font-family:"Bricolage Grotesque",Arial,sans-serif; font-size:19px; font-weight:600; color:var(--text);
+  font-family:var(--sans); font-size:19px; font-weight:600; color:var(--text);
   white-space:nowrap;
 }
 .titlemeta .r{font-size:15px; color:var(--text-dim); margin-top:2px}
@@ -237,7 +265,7 @@ blockquote .attr{
 /* ── Chrome outside the stage ─────────────────────────────────────────── */
 #hud{
   position:fixed; right:20px; bottom:16px; display:flex; align-items:center; gap:10px;
-  font-family:"JetBrains Mono",monospace; font-size:12px; color:var(--text-dim); z-index:5;
+  font-family:var(--mono); font-size:12px; color:var(--text-dim); z-index:5;
 }
 #hud button{
   font:inherit; color:var(--text-dim); background:var(--surface);
@@ -256,12 +284,12 @@ blockquote .attr{
   box-shadow:var(--shadow);
 }
 #notes .h{
-  font-family:"JetBrains Mono",monospace; font-size:10.5px; letter-spacing:.18em;
+  font-family:var(--mono); font-size:10.5px; letter-spacing:.18em;
   text-transform:uppercase; color:var(--accent-text); margin-bottom:7px;
 }
 #hint{
   position:fixed; left:20px; bottom:18px; z-index:5;
-  font-family:"JetBrains Mono",monospace; font-size:11px; letter-spacing:.05em;
+  font-family:var(--mono); font-size:11px; letter-spacing:.05em;
   color:var(--text-dim); opacity:.7;
 }
 
@@ -291,17 +319,36 @@ blockquote .attr{
   <div id="rail"></div>
 
   <!-- 1 ────────────────────────────────────────────────────────────── -->
-  <section class="slide" data-notes="Welkom. Deze sessie gaat niet over ideeën bedenken — daar is iedereen goed in. Hij gaat over de stap daarna: hoe maak je iets dat écht bestaat. Back to Being is ons eigen voorbeeld: geen theorie, wél iets dat we in zes dagen hebben neergezet.">
-    <div class="eyebrow">Sessie <span class="sep">/</span> Van idee naar tractie</div>
+  <section class="slide slide-open" data-notes="Openingsslide. Laat hem even staan zonder te praten. Eén zin, meer heeft de opening niet nodig — de rest van de sessie vult hem in.">
     <div class="spacer"></div>
-    <h1>Van idee naar<br>iets dat bestaat</h1>
-    <p class="lead">Hoe je een concept stap voor stap omzet in actie, zichtbaarheid en tractie — zonder dat je vooraf alle kennis, middelen of mensen hoeft te hebben.</p>
+
+    <!-- Beeldmerk: de waaier uit het Back to Being-logo, nagetekend als zes
+         taps toelopende bladen die samenkomen in één punt. Vectoren, dus
+         scherp op elk formaat en meekleurend met het thema. -->
+    <div class="logo">
+      <svg class="mark" viewBox="0 0 320 178" role="img" aria-label="Back to Being">
+        <g transform="translate(160,172)">
+          <g>
+            <path d="M-5 0 L-18 -148 L21 -137 L5 0 Z" transform="rotate(-16)"/>
+            <path d="M-5 0 L-18 -148 L21 -137 L5 0 Z" transform="rotate(-48) scale(.96)"/>
+            <path d="M-5 0 L-18 -148 L21 -137 L5 0 Z" transform="rotate(-80) scale(.90)"/>
+          </g>
+          <g transform="scale(-1,1)">
+            <path d="M-5 0 L-18 -148 L21 -137 L5 0 Z" transform="rotate(-16)"/>
+            <path d="M-5 0 L-18 -148 L21 -137 L5 0 Z" transform="rotate(-48) scale(.96)"/>
+            <path d="M-5 0 L-18 -148 L21 -137 L5 0 Z" transform="rotate(-80) scale(.90)"/>
+          </g>
+        </g>
+      </svg>
+      <span class="word" aria-hidden="true">back to being</span>
+    </div>
+
+    <h1 class="opener">Een idee bestaat pas<br>als iemand anders het kan zien.</h1>
+
     <div class="spacer"></div>
-    <div class="titlemeta">
-      <div><div class="n">Caesar Schoorl</div><div class="r">Mensen &amp; partners</div></div>
-      <div><div class="n">Max Helmantel</div><div class="r">AI, creativiteit &amp; verhaal</div></div>
-      <div><div class="n">Stijn Smit</div><div class="r">Bouwen, lanceren &amp; testen</div></div>
-      <div><div class="n mono" style="color:var(--accent-text)">backtobeing.tech</div><div class="r">Praktijkvoorbeeld</div></div>
+    <div class="openfoot">
+      <span>Caesar Schoorl</span><span>Max Helmantel</span><span>Stijn Smit</span>
+      <span class="mono site">backtobeing.tech</span>
     </div>
   </section>
 
@@ -426,7 +473,7 @@ blockquote .attr{
     <div class="cols cols-2">
       <div class="panel"><div class="label">Naam &amp; positionering</div><h3>Het idee in twee woorden</h3><p><em>Back to Being</em> zegt in twee woorden waar het over gaat: technologie die je dichter bij jezelf en elkaar brengt. Kun je het niet in twee woorden zeggen, dan is de keuze nog niet gemaakt.</p></div>
       <div class="panel"><div class="label">Storytelling</div><h3>De reis is het verhaal, het product het bewijs</h3><p>Niemand volgt een app in aanbouw. Mensen volgen wel drie mensen die 120 kilometer lopen met een deadline. Zoek het menselijke deel van je idee en zet dat vooraan.</p></div>
-      <div class="panel" style="border-color:var(--atlantic)"><div class="label" style="color:var(--atlantic)">AI als studio</div><h3>Van weken naar minuten</h3><p>Concepten, beeldrichtingen, naamvarianten, copy, socialposts, moodboards. Twintig varianten waar er vroeger één was — je kiest beter omdat je meer te kiezen hebt.</p></div>
+      <div class="panel" style="border-color:var(--brand-strong)"><div class="label" style="color:var(--brand-strong)">AI als studio</div><h3>Van weken naar minuten</h3><p>Concepten, beeldrichtingen, naamvarianten, copy, socialposts, moodboards. Twintig varianten waar er vroeger één was — je kiest beter omdat je meer te kiezen hebt.</p></div>
       <div class="panel"><div class="label">Content onderweg</div><h3>Geen lancering, maar afleveringen</h3><p>Elke dag iets laten zien, ook als het rommelig is. Een reeks kleine updates bouwt meer publiek op dan één perfecte aankondiging aan het eind.</p></div>
     </div>
     <div class="spacer"></div>
@@ -471,7 +518,7 @@ blockquote .attr{
         <p class="body">Daaromheen komt alles van Stichting MIND op één plek samen: podcasts, meditaties, artikelen en challenges.</p>
       </div>
       <div style="display:flex; flex-direction:column; gap:16px">
-        <div class="panel" style="border-color:var(--euca)"><div class="label" style="color:var(--euca)">Wat we ermee deden</div><h3>Gratis gedoneerd aan Stichting MIND</h3><p>Geen verdienmodel, geen licentie. De app is weggegeven aan de organisatie die er daadwerkelijk mee kan werken.</p></div>
+        <div class="panel" style="border-color:var(--brand)"><div class="label" style="color:var(--brand)">Wat we ermee deden</div><h3>Gratis gedoneerd aan Stichting MIND</h3><p>Geen verdienmodel, geen licentie. De app is weggegeven aan de organisatie die er daadwerkelijk mee kan werken.</p></div>
         <div class="panel"><div class="label">Het gereedschap</div><p>Laptop in de rugzak, Xreal-bril als scherm zodat je de omgeving blijft zien, spraakbediening, een Nintendo Switch-controller als invoer, powerbanks en Starlink voor internet onderweg.</p></div>
       </div>
     </div>
