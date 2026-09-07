@@ -6,7 +6,7 @@
 
 HTML-slidedeck voor de sessie over het omzetten van een idee in actie,
 zichtbaarheid en tractie, met Back to Being als praktijkvoorbeeld.
-Zestien slides in drie etappes: **mensen** (Caesar), **verhaal** (Max) en
+Achttien slides: eerst het verhaal van de actie, dan drie etappes: **mensen** (Caesar), **verhaal** (Max) en
 **lancering** (Stijn).
 
 Zelfstandig bestand, geen build, geen dependencies. Gehost via GitHub Pages
