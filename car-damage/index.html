@@ -1,0 +1,697 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Car Damage</title>
+<meta name="description" content="Track damage per car by license plate. Tap the drawing to add or view a photo of the damage.">
+<meta name="theme-color" content="#111111">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Car Damage">
+<style>
+  :root {
+    --bg: #f4f4f5;
+    --card: #ffffff;
+    --text: #111111;
+    --muted: #6b7280;
+    --line: #e4e4e7;
+    --accent: #111111;
+    --accent-text: #ffffff;
+    --danger: #dc2626;
+    --marker: #e11d48;
+    --plate: #f7c600;
+    --plate-text: #111111;
+    --eu: #1d4ed8;
+    --shadow: 0 1px 2px rgba(0,0,0,.06), 0 4px 16px rgba(0,0,0,.06);
+    --radius: 14px;
+    --safe-top: env(safe-area-inset-top, 0px);
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0f0f10;
+      --card: #1c1c1f;
+      --text: #f4f4f5;
+      --muted: #a1a1aa;
+      --line: #2e2e33;
+      --accent: #f4f4f5;
+      --accent-text: #111111;
+      --shadow: 0 1px 2px rgba(0,0,0,.4), 0 4px 16px rgba(0,0,0,.35);
+    }
+  }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font: 16px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    -webkit-text-size-adjust: 100%;
+    -webkit-tap-highlight-color: transparent;
+    min-height: 100vh;
+    min-height: 100dvh;
+    overscroll-behavior-y: contain;
+  }
+  button, input, textarea { font: inherit; color: inherit; }
+  button { cursor: pointer; }
+  h1, h2 { margin: 0; }
+  h2 { font-size: 15px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; margin: 24px 0 10px; }
+
+  .topbar {
+    position: sticky; top: 0; z-index: 5;
+    display: grid; grid-template-columns: 48px 1fr 48px; align-items: center;
+    padding: calc(var(--safe-top) + 8px) 8px 8px;
+    background: var(--bg);
+    border-bottom: 1px solid var(--line);
+  }
+  .topbar h1 { font-size: 18px; font-weight: 700; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .iconbtn {
+    width: 44px; height: 44px; border: 0; background: transparent; border-radius: 12px;
+    font-size: 15px; font-weight: 600; display: grid; place-items: center;
+  }
+  .iconbtn:active { background: var(--line); }
+  .iconbtn svg { width: 24px; height: 24px; }
+  main { padding: 16px 16px calc(var(--safe-bottom) + 32px); max-width: 640px; margin: 0 auto; }
+  .view[hidden] { display: none; }
+
+  /* License plate */
+  .plate {
+    display: flex; align-items: stretch;
+    background: var(--plate); color: var(--plate-text);
+    border-radius: 10px; overflow: hidden;
+    border: 2px solid #1a1a1a;
+    font-weight: 700; letter-spacing: .08em; text-transform: uppercase;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  }
+  .plate .eu {
+    background: var(--eu); color: #fff; font-size: 11px; font-weight: 700; letter-spacing: 0;
+    display: flex; flex-direction: column; justify-content: flex-end; align-items: center;
+    padding: 6px 8px 6px; min-width: 32px;
+  }
+  .plate .eu::before { content: ""; width: 14px; height: 14px; border-radius: 50%; border: 1.5px dotted #ffd400; margin-bottom: auto; margin-top: 2px; }
+  .plate input {
+    flex: 1; min-width: 0; border: 0; background: transparent; outline: 0;
+    font-size: 30px; padding: 10px 12px; text-align: center; font-weight: 700; letter-spacing: .1em; text-transform: uppercase;
+  }
+  .plate input::placeholder { color: rgba(0,0,0,.35); letter-spacing: .1em; }
+  .plate.big { font-size: 34px; }
+  .plate.big .txt { flex: 1; text-align: center; padding: 8px 12px; }
+  .plate.small { font-size: 18px; border-width: 1.5px; border-radius: 7px; }
+  .plate.small .eu { font-size: 8px; min-width: 22px; padding: 3px 4px; }
+  .plate.small .eu::before { width: 9px; height: 9px; }
+  .plate.small .txt { padding: 4px 12px; }
+
+  label.field { display: block; font-size: 13px; font-weight: 600; color: var(--muted); margin-bottom: 6px; }
+  .primary {
+    display: block; width: 100%; padding: 15px 18px; border: 0; border-radius: var(--radius);
+    background: var(--accent); color: var(--accent-text); font-weight: 700; font-size: 17px;
+  }
+  .primary:active { opacity: .85; }
+  .secondary {
+    display: block; width: 100%; padding: 13px 18px; border: 1.5px solid var(--line); border-radius: var(--radius);
+    background: var(--card); font-weight: 600; font-size: 16px;
+  }
+  .secondary:active { background: var(--line); }
+  .danger { color: var(--danger); }
+  .linkbtn { background: none; border: 0; padding: 12px; width: 100%; font-weight: 600; font-size: 15px; }
+  .stack > * + * { margin-top: 10px; }
+  form .primary { margin-top: 14px; }
+
+  .list { list-style: none; margin: 0; padding: 0; }
+  .list li { margin: 0; }
+  .row {
+    display: flex; align-items: center; gap: 14px; width: 100%; text-align: left;
+    background: var(--card); border: 0; border-radius: var(--radius); padding: 12px 14px;
+    box-shadow: var(--shadow); margin-bottom: 10px;
+  }
+  .row:active { transform: scale(.995); }
+  .row .meta { flex: 1; min-width: 0; }
+  .row .meta .t { display: block; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .row .meta .s { display: block; font-size: 13px; color: var(--muted); }
+  .row .chev { color: var(--muted); flex: 0 0 auto; }
+  .row .num {
+    flex: 0 0 auto; width: 30px; height: 30px; border-radius: 50%; background: var(--marker); color: #fff;
+    font-weight: 700; font-size: 14px; display: grid; place-items: center;
+  }
+  .row .thumb { flex: 0 0 auto; width: 56px; height: 56px; border-radius: 10px; object-fit: cover; background: var(--line); }
+  .row .thumb.none { display: grid; place-items: center; color: var(--muted); }
+  .row .thumb.none svg { width: 24px; height: 24px; }
+  .empty { color: var(--muted); text-align: center; padding: 28px 12px; font-size: 15px; }
+
+  /* Drawing */
+  .drawing {
+    background: #fff; border-radius: var(--radius); box-shadow: var(--shadow);
+    padding: 8px; margin-top: 14px; position: relative; touch-action: manipulation;
+  }
+  .drawing svg { display: block; width: 100%; height: auto; }
+  .drawing.placing { outline: 3px solid var(--marker); cursor: crosshair; }
+  .drawing.placing .car { animation: pulse 1.6s ease-in-out infinite; }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: .55; } }
+  .marker { cursor: pointer; }
+  .marker circle.hit { fill: transparent; }
+  .marker circle.dot { fill: var(--marker); stroke: #fff; stroke-width: 6; }
+  .marker text { fill: #fff; font-weight: 700; font-size: 30px; text-anchor: middle; dominant-baseline: central; pointer-events: none; font-family: inherit; }
+  .marker.preview circle.dot { fill: var(--marker); opacity: .9; }
+  .marker.active circle.dot { stroke: var(--marker); fill: #fff; }
+  .marker.active text { fill: var(--marker); }
+  .hint {
+    margin-top: 14px; padding: 12px 14px; border-radius: 12px;
+    background: var(--marker); color: #fff; font-weight: 600; text-align: center;
+  }
+  .actions { display: grid; gap: 10px; margin-top: 14px; }
+  .actions.two { grid-template-columns: 1fr 1fr; }
+
+  /* Bottom sheet */
+  .sheet { position: fixed; inset: 0; z-index: 20; background: rgba(0,0,0,.45); display: flex; align-items: flex-end; }
+  .sheet[hidden] { display: none; }
+  .sheet-body {
+    background: var(--card); width: 100%; max-width: 640px; margin: 0 auto;
+    border-radius: 20px 20px 0 0; padding: 8px 16px calc(var(--safe-bottom) + 20px);
+    max-height: 92vh; max-height: 92dvh; overflow-y: auto;
+    animation: up .22s ease-out;
+  }
+  @keyframes up { from { transform: translateY(40px); opacity: .6; } to { transform: none; opacity: 1; } }
+  .handle { width: 40px; height: 4px; background: var(--line); border-radius: 2px; margin: 4px auto 14px; }
+  .sheet-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+  .sheet-head h2 { margin: 0; color: var(--text); text-transform: none; letter-spacing: 0; font-size: 20px; font-weight: 700; }
+  .sheet-head .close { border: 0; background: var(--line); width: 32px; height: 32px; border-radius: 50%; font-size: 18px; line-height: 1; }
+  .photo-box {
+    position: relative; border-radius: 14px; overflow: hidden; background: var(--bg);
+    aspect-ratio: 4 / 3; display: grid; place-items: center; border: 1.5px dashed var(--line);
+  }
+  .photo-box img { width: 100%; height: 100%; object-fit: contain; display: block; background: #000; }
+  .photo-box.has { border-style: solid; }
+  .photo-box .ph { color: var(--muted); text-align: center; font-size: 14px; padding: 12px; }
+  .photo-box .ph svg { width: 36px; height: 36px; display: block; margin: 0 auto 6px; }
+  .filebtn { position: relative; overflow: hidden; }
+  .filebtn input { position: absolute; inset: 0; opacity: 0; width: 100%; height: 100%; cursor: pointer; }
+  textarea {
+    width: 100%; min-height: 80px; resize: vertical; border: 1.5px solid var(--line); border-radius: 12px;
+    padding: 12px; background: var(--bg); outline: 0;
+  }
+  textarea:focus { border-color: var(--muted); }
+  .kv { font-size: 13px; color: var(--muted); }
+  .spin { display: inline-block; width: 18px; height: 18px; border: 2.5px solid rgba(255,255,255,.4); border-top-color: #fff; border-radius: 50%; animation: rot .8s linear infinite; vertical-align: -4px; margin-right: 8px; }
+  @keyframes rot { to { transform: rotate(360deg); } }
+
+  .lightbox { position: fixed; inset: 0; z-index: 30; background: #000; display: grid; place-items: center; }
+  .lightbox[hidden] { display: none; }
+  .lightbox img { max-width: 100vw; max-height: 100vh; max-height: 100dvh; object-fit: contain; }
+  .lightbox .close { position: absolute; top: calc(var(--safe-top) + 12px); right: 12px; width: 40px; height: 40px; border-radius: 50%; border: 0; background: rgba(255,255,255,.2); color: #fff; font-size: 22px; }
+
+  .toast {
+    position: fixed; left: 50%; bottom: calc(var(--safe-bottom) + 24px); transform: translateX(-50%) translateY(20px);
+    background: var(--text); color: var(--bg); padding: 10px 16px; border-radius: 999px; font-weight: 600; font-size: 14px;
+    opacity: 0; transition: .2s; pointer-events: none; z-index: 40; white-space: nowrap;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%); }
+  .foot { text-align: center; color: var(--muted); font-size: 12px; margin-top: 32px; }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <button id="back" class="iconbtn" aria-label="Back" style="visibility:hidden">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>
+  </button>
+  <h1 id="title">Car Damage</h1>
+  <button id="lang" class="iconbtn" aria-label="Language">NL</button>
+</header>
+
+<main>
+  <!-- Home: pick a car by license plate -->
+  <section id="view-home" class="view">
+    <form id="plate-form" autocomplete="off">
+      <label class="field" for="plate-input" data-i18n="plateLabel">License plate</label>
+      <div class="plate">
+        <span class="eu">NL</span>
+        <input id="plate-input" inputmode="text" autocapitalize="characters" autocorrect="off" spellcheck="false" placeholder="AB-123-C" maxlength="12" enterkeyhint="go">
+      </div>
+      <button type="submit" class="primary" data-i18n="openCar">Open car</button>
+    </form>
+    <h2 data-i18n="cars">Cars</h2>
+    <ul id="car-list" class="list"></ul>
+    <p id="no-cars" class="empty" data-i18n="noCars" hidden></p>
+    <p class="foot" data-i18n="localNote"></p>
+  </section>
+
+  <!-- Car: drawing with damage markers -->
+  <section id="view-car" class="view" hidden>
+    <div class="plate big"><span class="eu">NL</span><span class="txt" id="car-plate"></span></div>
+    <div id="hint" class="hint" data-i18n="tapHint" hidden></div>
+    <div class="drawing" id="drawing">
+      <svg id="car-svg" viewBox="0 0 1000 440" aria-label="Side view of a car">
+        <g class="car" fill="none" stroke="#111" stroke-width="7" stroke-linejoin="round" stroke-linecap="round">
+          <path d="M 183 330 A 62 62 0 0 1 307 330 L 728 330 A 62 62 0 0 1 852 330 L 930 330 Q 958 330 958 300 L 955 250 C 940 210 900 190 830 182 L 760 172 C 700 130 640 108 560 108 L 400 112 C 320 118 260 150 215 212 L 150 218 L 70 232 Q 45 240 45 265 L 45 305 Q 45 330 70 330 Z"/>
+          <circle cx="245" cy="330" r="50"/><circle cx="245" cy="330" r="20"/>
+          <circle cx="790" cy="330" r="50"/><circle cx="790" cy="330" r="20"/>
+          <path d="M 248 205 C 288 162 332 140 400 134 L 478 131 L 478 205 Z"/>
+          <path d="M 500 131 L 560 128 C 624 128 674 145 730 184 L 500 205 Z"/>
+          <path d="M 489 205 L 487 322"/>
+          <path d="M 240 212 L 236 262"/>
+          <path d="M 736 196 L 738 262"/>
+          <rect x="395" y="236" width="42" height="11" rx="5"/>
+          <rect x="640" y="236" width="42" height="11" rx="5"/>
+          <path d="M 750 178 l 20 -8 l 8 14 l -18 8 Z"/>
+          <path d="M 900 212 Q 950 225 952 262 L 905 248 Q 890 230 900 212 Z"/>
+          <rect x="50" y="246" width="16" height="40" rx="5"/>
+          <path d="M 958 292 L 935 292"/>
+          <path d="M 45 292 L 70 292"/>
+        </g>
+        <path d="M 20 400 L 980 400" stroke="#c4c4c4" stroke-width="4" stroke-linecap="round"/>
+        <g id="markers"></g>
+      </svg>
+    </div>
+    <div class="actions" id="car-actions">
+      <button id="add-damage" class="primary" data-i18n="addDamage">Add damage</button>
+    </div>
+    <div class="actions" id="place-actions" hidden>
+      <button id="cancel-place" class="secondary" data-i18n="cancel">Cancel</button>
+    </div>
+    <h2><span data-i18n="damages">Damage</span> (<span id="dmg-count">0</span>)</h2>
+    <ul id="damage-list" class="list"></ul>
+    <p id="no-damage" class="empty" data-i18n="noDamage" hidden></p>
+    <button id="delete-car" class="linkbtn danger" data-i18n="removeCar">Remove this car</button>
+  </section>
+</main>
+
+<div id="sheet" class="sheet" hidden>
+  <div class="sheet-body" id="sheet-body"></div>
+</div>
+
+<div id="lightbox" class="lightbox" hidden>
+  <img id="lightbox-img" alt="">
+  <button class="close" id="lightbox-close" aria-label="Close">×</button>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script>
+'use strict';
+
+/* ---------- Translations ---------- */
+const STR = {
+  en: {
+    appName: 'Car Damage',
+    plateLabel: 'License plate',
+    openCar: 'Open car',
+    cars: 'Cars',
+    noCars: 'No cars yet. Enter a license plate above to start.',
+    localNote: 'Data is stored on this phone only.',
+    addDamage: '+ Add damage',
+    tapHint: 'Tap the drawing where the damage is',
+    cancel: 'Cancel',
+    save: 'Save',
+    delete: 'Delete',
+    takePhoto: 'Take photo',
+    choosePhoto: 'Choose from gallery',
+    replacePhoto: 'Replace photo',
+    note: 'Note',
+    notePlaceholder: 'e.g. scratch on rear door',
+    noPhoto: 'No photo yet',
+    newDamage: 'New damage',
+    damage: 'Damage',
+    damages: 'Damage',
+    noDamage: 'No damage recorded for this car.',
+    removeCar: 'Remove this car',
+    confirmRemoveCar: 'Remove this car and all its damage photos?',
+    confirmDeleteDamage: 'Delete this damage?',
+    saved: 'Saved',
+    deleted: 'Deleted',
+    photoError: 'Could not read that photo',
+    added: 'Added',
+    dmgCount: n => n === 1 ? '1 damage' : `${n} damages`,
+    noNote: 'No note',
+    tapToEnlarge: 'Tap the photo to enlarge',
+  },
+  nl: {
+    appName: 'Autoschade',
+    plateLabel: 'Kenteken',
+    openCar: 'Auto openen',
+    cars: "Auto's",
+    noCars: 'Nog geen auto\'s. Vul hierboven een kenteken in om te beginnen.',
+    localNote: 'Gegevens worden alleen op deze telefoon bewaard.',
+    addDamage: '+ Schade toevoegen',
+    tapHint: 'Tik op de tekening waar de schade zit',
+    cancel: 'Annuleren',
+    save: 'Opslaan',
+    delete: 'Verwijderen',
+    takePhoto: 'Foto maken',
+    choosePhoto: 'Kies uit galerij',
+    replacePhoto: 'Foto vervangen',
+    note: 'Notitie',
+    notePlaceholder: 'bijv. kras op achterportier',
+    noPhoto: 'Nog geen foto',
+    newDamage: 'Nieuwe schade',
+    damage: 'Schade',
+    damages: 'Schade',
+    noDamage: 'Geen schade geregistreerd voor deze auto.',
+    removeCar: 'Deze auto verwijderen',
+    confirmRemoveCar: 'Deze auto en alle schadefoto\'s verwijderen?',
+    confirmDeleteDamage: 'Deze schade verwijderen?',
+    saved: 'Opgeslagen',
+    deleted: 'Verwijderd',
+    photoError: 'Kon die foto niet lezen',
+    added: 'Toegevoegd',
+    dmgCount: n => n === 1 ? '1 schade' : `${n} schades`,
+    noNote: 'Geen notitie',
+    tapToEnlarge: 'Tik op de foto om te vergroten',
+  }
+};
+let lang = 'en';
+try { lang = localStorage.getItem('lang') || ((navigator.language || '').toLowerCase().startsWith('nl') ? 'nl' : 'en'); } catch (e) {}
+const t = (key, ...args) => { const v = STR[lang][key]; return typeof v === 'function' ? v(...args) : (v ?? key); };
+function applyLang() {
+  document.documentElement.lang = lang;
+  document.querySelectorAll('[data-i18n]').forEach(el => { el.textContent = t(el.dataset.i18n); });
+  $('lang').textContent = lang === 'en' ? 'NL' : 'EN';
+  document.title = t('appName');
+  route();
+}
+
+/* ---------- Helpers ---------- */
+const $ = id => document.getElementById(id);
+const normalizePlate = s => (s || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+const displayPlate = s => (s || '').toUpperCase().replace(/\s+/g, ' ').trim();
+const locale = () => lang === 'nl' ? 'nl-NL' : 'en-GB';
+const fmtDate = ts => new Date(ts).toLocaleString(locale(), { dateStyle: 'medium', timeStyle: 'short' });
+const fmtDay = ts => new Date(ts).toLocaleDateString(locale(), { dateStyle: 'medium' });
+const uid = () => (crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2));
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+let toastTimer;
+function toast(msg) {
+  const el = $('toast'); el.textContent = msg; el.classList.add('show');
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => el.classList.remove('show'), 1800);
+}
+const urls = [];
+const objUrl = blob => { const u = URL.createObjectURL(blob); urls.push(u); return u; };
+function revokeAll() { while (urls.length) URL.revokeObjectURL(urls.pop()); }
+
+/* ---------- Storage (IndexedDB) ---------- */
+const dbp = new Promise((resolve, reject) => {
+  const r = indexedDB.open('car-damage', 1);
+  r.onupgradeneeded = () => {
+    const d = r.result;
+    d.createObjectStore('cars', { keyPath: 'plate' });
+    d.createObjectStore('damages', { keyPath: 'id' }).createIndex('plate', 'plate');
+  };
+  r.onsuccess = () => resolve(r.result);
+  r.onerror = () => reject(r.error);
+});
+const req = r => new Promise((res, rej) => { r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); });
+async function store(name, mode = 'readonly') { return (await dbp).transaction(name, mode).objectStore(name); }
+const DB = {
+  async allCars() { return req((await store('cars')).getAll()); },
+  async getCar(plate) { return req((await store('cars')).get(plate)); },
+  async putCar(car) { return req((await store('cars', 'readwrite')).put(car)); },
+  async touchCar(plate) { const c = await this.getCar(plate); if (c) { c.updatedAt = Date.now(); await this.putCar(c); } },
+  async deleteCar(plate) {
+    const d = await dbp;
+    const tx = d.transaction(['cars', 'damages'], 'readwrite');
+    tx.objectStore('cars').delete(plate);
+    const idx = tx.objectStore('damages').index('plate');
+    const keys = await req(idx.getAllKeys(plate));
+    keys.forEach(k => tx.objectStore('damages').delete(k));
+    return new Promise((res, rej) => { tx.oncomplete = res; tx.onerror = () => rej(tx.error); });
+  },
+  async damagesFor(plate) {
+    const list = await req((await store('damages')).index('plate').getAll(plate));
+    return list.sort((a, b) => a.createdAt - b.createdAt);
+  },
+  async countFor(plate) { return req((await store('damages')).index('plate').count(plate)); },
+  async getDamage(id) { return req((await store('damages')).get(id)); },
+  async putDamage(dmg) { return req((await store('damages', 'readwrite')).put(dmg)); },
+  async deleteDamage(id) { return req((await store('damages', 'readwrite')).delete(id)); },
+};
+
+/* ---------- Photo processing (resize + compress, keep EXIF orientation) ---------- */
+async function loadBitmap(file) {
+  try {
+    return await new Promise((res, rej) => {
+      const img = new Image();
+      const u = URL.createObjectURL(file);
+      img.onload = () => { URL.revokeObjectURL(u); res(img); };
+      img.onerror = () => { URL.revokeObjectURL(u); rej(new Error('decode')); };
+      img.src = u;
+    });
+  } catch (e) {
+    if (!window.createImageBitmap) throw e;
+    return createImageBitmap(file, { imageOrientation: 'from-image' });
+  }
+}
+function scaleTo(bmp, max, quality) {
+  const w = bmp.width || bmp.naturalWidth, h = bmp.height || bmp.naturalHeight;
+  const s = Math.min(1, max / Math.max(w, h));
+  const c = document.createElement('canvas');
+  c.width = Math.round(w * s); c.height = Math.round(h * s);
+  c.getContext('2d').drawImage(bmp, 0, 0, c.width, c.height);
+  return new Promise(res => c.toBlob(b => res(b), 'image/jpeg', quality));
+}
+async function processPhoto(file) {
+  const bmp = await loadBitmap(file);
+  const photo = await scaleTo(bmp, 1600, 0.85);
+  const thumb = await scaleTo(bmp, 320, 0.8);
+  if (bmp.close) bmp.close();
+  if (!photo || !thumb) throw new Error('encode');
+  return { photo, thumb };
+}
+
+/* ---------- Routing ---------- */
+let current = null;          // plate of the open car
+let placing = false;         // waiting for a tap on the drawing
+function go(hash) { location.hash = hash; }
+function route() {
+  const m = location.hash.match(/^#car=([A-Z0-9]+)$/i);
+  closeSheet(false);
+  setPlacing(false);
+  if (m) { current = m[1].toUpperCase(); showCar(current); }
+  else { current = null; showHome(); }
+}
+window.addEventListener('hashchange', route);
+window.addEventListener('popstate', () => { if (!$('sheet').hidden) closeSheet(false); });
+
+/* ---------- Home ---------- */
+async function showHome() {
+  $('view-home').hidden = false; $('view-car').hidden = true; $('back').style.visibility = 'hidden';
+  $('title').textContent = t('appName');
+  const cars = (await DB.allCars()).sort((a, b) => b.updatedAt - a.updatedAt);
+  const counts = await Promise.all(cars.map(c => DB.countFor(c.plate)));
+  const ul = $('car-list'); ul.innerHTML = '';
+  cars.forEach((c, i) => {
+    const li = document.createElement('li');
+    li.innerHTML = `<button class="row" data-plate="${esc(c.plate)}">
+        <span class="plate small"><span class="eu">NL</span><span class="txt">${esc(c.display)}</span></span>
+        <span class="meta"><span class="s">${esc(t('dmgCount', counts[i]))} · ${esc(fmtDay(c.updatedAt))}</span></span>
+        <span class="chev">›</span></button>`;
+    li.querySelector('button').onclick = () => go('#car=' + c.plate);
+    ul.appendChild(li);
+  });
+  $('no-cars').hidden = cars.length > 0;
+}
+$('plate-form').addEventListener('submit', async e => {
+  e.preventDefault();
+  const raw = $('plate-input').value;
+  const plate = normalizePlate(raw);
+  if (!plate) { $('plate-input').focus(); return; }
+  let car = await DB.getCar(plate);
+  if (!car) { car = { plate, display: displayPlate(raw), createdAt: Date.now(), updatedAt: Date.now() }; await DB.putCar(car); }
+  $('plate-input').value = '';
+  $('plate-input').blur();
+  go('#car=' + plate);
+});
+$('back').onclick = () => go('');
+$('lang').onclick = () => { lang = lang === 'en' ? 'nl' : 'en'; try { localStorage.setItem('lang', lang); } catch (e) {} applyLang(); };
+
+/* ---------- Car view ---------- */
+let damages = [];
+async function showCar(plate) {
+  let car = await DB.getCar(plate);
+  if (!car) { car = { plate, display: plate, createdAt: Date.now(), updatedAt: Date.now() }; await DB.putCar(car); }
+  $('view-home').hidden = true; $('view-car').hidden = false; $('back').style.visibility = 'visible';
+  $('title').textContent = t('damage');
+  $('car-plate').textContent = car.display;
+  await refreshDamages();
+}
+async function refreshDamages() {
+  revokeAll();
+  damages = await DB.damagesFor(current);
+  $('dmg-count').textContent = damages.length;
+  $('no-damage').hidden = damages.length > 0;
+  renderMarkers();
+  const ul = $('damage-list'); ul.innerHTML = '';
+  damages.forEach((d, i) => {
+    const li = document.createElement('li');
+    const thumb = d.thumb ? `<img class="thumb" alt="" src="${objUrl(d.thumb)}">`
+      : `<span class="thumb none"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7l1.5-3h5L16 7"/><circle cx="12" cy="13.5" r="3.5"/></svg></span>`;
+    li.innerHTML = `<button class="row" data-id="${esc(d.id)}"><span class="num">${i + 1}</span>${thumb}
+      <span class="meta"><span class="t">${esc(d.note || t('noNote'))}</span><span class="s">${esc(fmtDate(d.createdAt))}</span></span><span class="chev">›</span></button>`;
+    li.querySelector('button').onclick = () => openDetail(d.id);
+    ul.appendChild(li);
+  });
+}
+const SVG_NS = 'http://www.w3.org/2000/svg';
+function markerEl(x, y, label, cls) {
+  const g = document.createElementNS(SVG_NS, 'g');
+  g.setAttribute('class', 'marker ' + (cls || ''));
+  g.setAttribute('transform', `translate(${(x * 1000).toFixed(1)} ${(y * 440).toFixed(1)})`);
+  const hit = document.createElementNS(SVG_NS, 'circle'); hit.setAttribute('class', 'hit'); hit.setAttribute('r', '46');
+  const dot = document.createElementNS(SVG_NS, 'circle'); dot.setAttribute('class', 'dot'); dot.setAttribute('r', '28');
+  const tx = document.createElementNS(SVG_NS, 'text'); tx.textContent = label;
+  g.append(hit, dot, tx);
+  return g;
+}
+function renderMarkers(activeId) {
+  const layer = $('markers'); layer.innerHTML = '';
+  damages.forEach((d, i) => {
+    const g = markerEl(d.x, d.y, i + 1, d.id === activeId ? 'active' : '');
+    g.addEventListener('click', ev => { if (placing) return; ev.stopPropagation(); openDetail(d.id); });
+    layer.appendChild(g);
+  });
+}
+function setPlacing(on) {
+  placing = on;
+  $('drawing').classList.toggle('placing', on);
+  $('hint').hidden = !on;
+  $('car-actions').hidden = on;
+  $('place-actions').hidden = !on;
+}
+$('add-damage').onclick = () => setPlacing(true);
+$('cancel-place').onclick = () => setPlacing(false);
+$('car-svg').addEventListener('click', ev => {
+  if (!placing) return;
+  const svg = $('car-svg');
+  const pt = svg.createSVGPoint(); pt.x = ev.clientX; pt.y = ev.clientY;
+  const loc = pt.matrixTransform(svg.getScreenCTM().inverse());
+  const x = Math.min(1, Math.max(0, loc.x / 1000)), y = Math.min(1, Math.max(0, loc.y / 440));
+  setPlacing(false);
+  $('markers').appendChild(markerEl(x, y, damages.length + 1, 'preview'));
+  openAddSheet(x, y);
+});
+$('delete-car').onclick = async () => {
+  if (!confirm(t('confirmRemoveCar'))) return;
+  await DB.deleteCar(current);
+  toast(t('deleted'));
+  go('');
+};
+
+/* ---------- Bottom sheet ---------- */
+function openSheet(html) {
+  const s = $('sheet'); $('sheet-body').innerHTML = html; s.hidden = false;
+  if (!(history.state && history.state.sheet)) history.pushState({ sheet: 1 }, '');
+  $('sheet-body').querySelectorAll('[data-close]').forEach(b => b.onclick = () => closeSheet(true));
+}
+function closeSheet(pop) {
+  const s = $('sheet');
+  if (s.hidden) return;
+  s.hidden = true; $('sheet-body').innerHTML = '';
+  if (current) renderMarkers();
+  if (pop && history.state && history.state.sheet) history.back();
+}
+$('sheet').addEventListener('click', e => { if (e.target === $('sheet')) closeSheet(true); });
+
+function photoBoxHtml(src) {
+  return src ? `<div class="photo-box has"><img src="${src}" alt=""></div>`
+    : `<div class="photo-box"><div class="ph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7l1.5-3h5L16 7"/><circle cx="12" cy="13.5" r="3.5"/></svg>${esc(t('noPhoto'))}</div></div>`;
+}
+function fileButtonsHtml(hasPhoto) {
+  return `<div class="actions two">
+    <button class="primary filebtn">${esc(hasPhoto ? t('replacePhoto') : t('takePhoto'))}<input type="file" accept="image/*" capture="environment" data-photo></button>
+    <button class="secondary filebtn">${esc(t('choosePhoto'))}<input type="file" accept="image/*" data-photo></button>
+  </div>`;
+}
+function sheetHead(title) {
+  return `<div class="handle"></div><div class="sheet-head"><h2>${esc(title)}</h2><button class="close" data-close aria-label="Close">×</button></div>`;
+}
+async function pickPhoto(input, onDone) {
+  const file = input.files && input.files[0];
+  if (!file) return;
+  const btn = input.closest('button'); const orig = btn.innerHTML;
+  btn.innerHTML = `<span class="spin"></span>`; btn.disabled = true;
+  try { onDone(await processPhoto(file)); }
+  catch (e) { console.error(e); toast(t('photoError')); btn.innerHTML = orig; btn.disabled = false; }
+}
+
+/* Add a new damage */
+function openAddSheet(x, y) {
+  let pending = null;
+  const render = () => {
+    openSheet(`${sheetHead(t('newDamage'))}
+      <div class="stack">
+        <div id="pbox">${photoBoxHtml(pending ? objUrl(pending.thumb) : null)}</div>
+        ${fileButtonsHtml(!!pending)}
+        <label class="field" for="note">${esc(t('note'))}</label>
+        <textarea id="note" placeholder="${esc(t('notePlaceholder'))}"></textarea>
+        <button class="primary" id="save-dmg">${esc(t('save'))}</button>
+        <button class="linkbtn" data-close>${esc(t('cancel'))}</button>
+      </div>`);
+    const body = $('sheet-body');
+    body.querySelectorAll('[data-photo]').forEach(inp => inp.onchange = () => pickPhoto(inp, res => {
+      const note = $('note').value; pending = res; render(); $('note').value = note;
+    }));
+    $('save-dmg').onclick = async () => {
+      const dmg = { id: uid(), plate: current, x, y, note: $('note').value.trim(), createdAt: Date.now(),
+        photo: pending ? pending.photo : null, thumb: pending ? pending.thumb : null };
+      await DB.putDamage(dmg);
+      await DB.touchCar(current);
+      closeSheet(true);
+      await refreshDamages();
+      toast(t('saved'));
+    };
+  };
+  render();
+}
+
+/* View / edit an existing damage */
+async function openDetail(id) {
+  const d = await DB.getDamage(id);
+  if (!d) return;
+  const n = damages.findIndex(x => x.id === id) + 1;
+  renderMarkers(id);
+  const render = () => {
+    const src = d.photo ? objUrl(d.photo) : null;
+    openSheet(`${sheetHead(`${t('damage')} ${n}`)}
+      <div class="stack">
+        <div id="pbox">${photoBoxHtml(src)}</div>
+        ${src ? `<p class="kv" style="text-align:center;margin:0">${esc(t('tapToEnlarge'))}</p>` : ''}
+        ${fileButtonsHtml(!!d.photo)}
+        <label class="field" for="note">${esc(t('note'))}</label>
+        <textarea id="note" placeholder="${esc(t('notePlaceholder'))}">${esc(d.note)}</textarea>
+        <p class="kv">${esc(t('added'))}: ${esc(fmtDate(d.createdAt))}</p>
+        <button class="primary" id="save-dmg">${esc(t('save'))}</button>
+        <button class="linkbtn danger" id="del-dmg">${esc(t('delete'))}</button>
+      </div>`);
+    const body = $('sheet-body');
+    if (src) body.querySelector('.photo-box img').onclick = () => { $('lightbox-img').src = src; $('lightbox').hidden = false; };
+    body.querySelectorAll('[data-photo]').forEach(inp => inp.onchange = () => pickPhoto(inp, async res => {
+      d.photo = res.photo; d.thumb = res.thumb; d.note = $('note').value.trim();
+      await DB.putDamage(d); await DB.touchCar(current); await refreshDamages(); renderMarkers(id); render(); toast(t('saved'));
+    }));
+    $('save-dmg').onclick = async () => {
+      d.note = $('note').value.trim();
+      await DB.putDamage(d); await DB.touchCar(current);
+      closeSheet(true); await refreshDamages(); toast(t('saved'));
+    };
+    $('del-dmg').onclick = async () => {
+      if (!confirm(t('confirmDeleteDamage'))) return;
+      await DB.deleteDamage(id); await DB.touchCar(current);
+      closeSheet(true); await refreshDamages(); toast(t('deleted'));
+    };
+  };
+  render();
+}
+$('lightbox-close').onclick = () => { $('lightbox').hidden = true; };
+$('lightbox').onclick = e => { if (e.target !== $('lightbox-img')) $('lightbox').hidden = true; };
+
+/* ---------- Boot ---------- */
+applyLang();
+if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
+  window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+}
+</script>
+</body>
+</html>
